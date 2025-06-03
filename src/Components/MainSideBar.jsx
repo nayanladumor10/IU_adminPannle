@@ -17,6 +17,14 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [isOpen, toggleSidebar])
 
+  const isActive = (path) => {
+    // Handle dashboard (empty path) case
+    if (path === "") {
+      return location.pathname === "/"
+    }
+    return location.pathname.includes(path)
+  }
+
   let options = [
     {
       name: "DashBoard",
@@ -24,9 +32,9 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
       path: ""
     },
     {
-      name: "Customer-Support",
-      icon: "fas fa-headset",
-      path: "customer-support"
+      name: "Rides",
+      icon: "fas fa-biking",
+      path: "rides"
     },
     {
       name: "Vehicle-Management",
@@ -48,16 +56,12 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
       icon: "fas fa-street-view",
       path: "live-tracking"
     },
+    {
+      name: "Customer-Support",
+      icon: "fas fa-headset",
+      path: "customer-support"
+    },
   ]
-
-  // Helper function to check if a path is active
-  const isActive = (path) => {
-    // Handle dashboard (empty path) separately
-    if (path === "") {
-      return location.pathname === "/"
-    }
-    return location.pathname.includes(path)
-  }
 
   return (
     <>
@@ -95,7 +99,7 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
               } transition-all duration-200`}>
                 {option.name}
               </div>
-              {/* Active indicator dot for mobile expanded view */}
+              {/* Active indicator for expanded sidebar */}
               {isMobile && isOpen && active && (
                 <div className="absolute left-2 w-1 h-6 bg-green-400 rounded-full"></div>
               )}
