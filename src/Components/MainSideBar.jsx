@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 export default function MainSideBar({ isOpen, toggleSidebar }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const location = useLocation()
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768)
-      // Close sidebar when resizing to mobile if it was open
       if (window.innerWidth < 768 && isOpen) {
         toggleSidebar()
       }
@@ -24,9 +24,9 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
       path: ""
     },
     {
-      name: "Rides",
-      icon: "fas fa-biking",
-      path: "rides"
+      name: "Customer-Support",
+      icon: "fas fa-headset",
+      path: "customer-support"
     },
     {
       name: "Vehicle-Management",
@@ -48,12 +48,16 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
       icon: "fas fa-street-view",
       path: "live-tracking"
     },
-    {
-      name: "Customer-Support",
-      icon: "fas fa-headset",
-      path: "customer-support"
-    },
   ]
+
+  // Helper function to check if a path is active
+  const isActive = (path) => {
+    // Handle dashboard (empty path) separately
+    if (path === "") {
+      return location.pathname === "/"
+    }
+    return location.pathname.includes(path)
+  }
 
   return (
     <>
@@ -72,25 +76,32 @@ export default function MainSideBar({ isOpen, toggleSidebar }) {
             : ''
         } border-r-[1px] border-gray-400/20 flex flex-col items-center pt-10 bg-gray-900 z-50 transition-all duration-300`}
       >
-        {
-          options.map((option, el) => {
-            return (
-              <Link 
-                key={el}
-                to={`${option.path}`} 
-                className="MenuOption h-12 w-12 rounded-lg flex justify-center items-center text-white hover:bg-gray-600/20 hover:text-green-500 group relative z-50"
-                onClick={() => isMobile && toggleSidebar()}
-              >
-                <i className={`${option.icon}`}></i>
-                <div className={`OptionInfo absolute left-[50px] min-w-[120px] px-2 py-2 bg-green-600/90 text-white hidden rounded-lg rounded-ss-none ${
-                  isMobile ? 'group-hover:block' : 'group-hover:block'
-                } transition-all duration-200`}>
-                  {option.name}
-                </div>
-              </Link>
-            )
-          })
-        }
+        {options.map((option, el) => {
+          const active = isActive(option.path)
+          return (
+            <Link 
+              key={el}
+              to={`/${option.path}`} 
+              className={`MenuOption h-12 w-12 rounded-lg flex justify-center items-center group relative z-50 ${
+                active 
+                  ? 'bg-green-600/30 text-green-400'
+                  : 'text-white hover:bg-gray-600/20 hover:text-green-500'
+              }`}
+              onClick={() => isMobile && toggleSidebar()}
+            >
+              <i className={`${option.icon}`}></i>
+              <div className={`OptionInfo absolute left-[50px] min-w-[120px] px-2 py-2 bg-green-600/90 text-white hidden rounded-lg rounded-ss-none ${
+                isMobile ? 'group-hover:block' : 'group-hover:block'
+              } transition-all duration-200`}>
+                {option.name}
+              </div>
+              {/* Active indicator dot for mobile expanded view */}
+              {isMobile && isOpen && active && (
+                <div className="absolute left-2 w-1 h-6 bg-green-400 rounded-full"></div>
+              )}
+            </Link>
+          )
+        })}
       </div>
     </>
   )
