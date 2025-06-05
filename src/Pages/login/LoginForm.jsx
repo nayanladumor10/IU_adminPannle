@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { FiUser, FiLock, FiEye, FiEyeOff, FiLogIn, FiMail, FiClock } from 'react-icons/fi';
 
@@ -31,38 +32,40 @@ export default function LoginForm({ onLoginSuccess }) {
     }
   };
 
-  const generateOtp = () => {
-    // Generate a 6-digit OTP
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check credentials (in a real app, this would be done on the server)
-      if (formData.email === 'admin@idharudhar.com' && formData.password === 'admin123') {
-        // Generate and "send" OTP
-        const generatedOtp = generateOtp();
-        console.log('Generated OTP (for demo purposes):', generatedOtp); // In real app, this would be sent via email/SMS
-        
-        // Set OTP expiry (5 minutes from now)
-        const expiryTime = new Date();
-        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
-        setOtpExpiry(expiryTime);
-        
-        setOtpSent(true);
-        setShowOtpField(true);
+      // First validate credentials
+      const response = await axios.post('https://idharudhar-backend-2.onrender.com/api/auth/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.success) {
+        // If credentials are valid, send OTP
+        const otpResponse = await axios.post('https://idharudhar-backend-2.onrender.com/api/auth/send-otp', {
+          email: formData.email
+        });
+
+        if (otpResponse.data.success) {
+          // Set OTP expiry (5 minutes from now)
+          const expiryTime = new Date();
+          expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+          setOtpExpiry(expiryTime);
+          
+          setOtpSent(true);
+          setShowOtpField(true);
+        } else {
+          throw new Error(otpResponse.data.message || 'Failed to send OTP');
+        }
       } else {
-        throw new Error('Invalid credentials');
+        throw new Error(response.data.message || 'Invalid credentials');
       }
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -74,23 +77,25 @@ export default function LoginForm({ onLoginSuccess }) {
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
       // Check if OTP is expired
       if (new Date() > otpExpiry) {
         throw new Error('OTP has expired. Please request a new one.');
       }
       
-      // In a real app, this would verify against the OTP sent to the user
-      // For demo purposes, we'll accept any 6-digit number
-      if (otp.length === 6) {
-        onLoginSuccess();
+      // Verify OTP with the server
+      const response = await axios.post('https://idharudhar-backend-2.onrender.com/api/auth/verify-otp', {
+        email: formData.email,
+        otp: otp
+      });
+
+      if (response.data.success) {
+        // OTP verification successful
+        onLoginSuccess(response.data.token); // Pass the token to parent component
       } else {
-        throw new Error('Please enter a valid 6-digit OTP');
+        throw new Error(response.data.message || 'Invalid OTP');
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'OTP verification failed');
     } finally {
       setIsLoading(false);
     }
@@ -101,26 +106,30 @@ export default function LoginForm({ onLoginSuccess }) {
     setError('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Generate new OTP
-      const generatedOtp = generateOtp();
-      console.log('Resent OTP (for demo purposes):', generatedOtp);
-      
-      // Set new expiry time
-      const expiryTime = new Date();
-      expiryTime.setMinutes(expiryTime.getMinutes() + 5);
-      setOtpExpiry(expiryTime);
-      
-      setOtp('');
-      setOtpSent(true);
+      const response = await axios.post('https://idharudhar-backend-2.onrender.com/api/auth/send-otp', {
+        email: formData.email
+      });
+
+      if (response.data.success) {
+        // Set new expiry time
+        const expiryTime = new Date();
+        expiryTime.setMinutes(expiryTime.getMinutes() + 5);
+        setOtpExpiry(expiryTime);
+        
+        setOtp('');
+        setOtpSent(true);
+      } else {
+        throw new Error(response.data.message || 'Failed to resend OTP');
+      }
     } catch (err) {
-      setError('Failed to resend OTP. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Failed to resend OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Calculate remaining minutes for OTP expiry
+  const remainingMinutes = otpExpiry ? Math.max(0, Math.floor((otpExpiry - new Date()) / 1000 / 60)) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -275,10 +284,12 @@ export default function LoginForm({ onLoginSuccess }) {
                     placeholder="123456"
                   />
                 </div>
-                <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <FiClock className="mr-1" />
-                  <span>Code expires in {Math.max(0, Math.floor((otpExpiry - new Date()) / 1000 / 60))} minutes</span>
-                </div>
+                {otpExpiry && (
+                  <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <FiClock className="mr-1" />
+                    <span>Code expires in {remainingMinutes} minute{remainingMinutes !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
               </div>
 
               <div className="text-sm text-center">
