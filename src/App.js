@@ -11,6 +11,7 @@ import Admins from './Pages/Admins';
 import LiveTracking from './Pages/LiveTracking';
 import RidesManagement from './Pages/RidesManagement';
 import DriverManagementDashboard from './Pages/Drivepage';
+import BillingPage from './Pages/BillingPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path='vehicle-management' element={<VehicleManagement/>}/>
           <Route path='reports-earnings' element={<ReportsEarning/>}/>
           <Route path='admins' element={<Admins/>}/>
+          <Route path='bills' element={<BillingPage/>}/>
           <Route path='live-tracking' element={<LiveTracking/>}/>
        </Route>
    </Routes>
