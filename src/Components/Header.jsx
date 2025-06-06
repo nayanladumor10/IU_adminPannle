@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react"
 // import { FaSun, FaMoon } from "react-icons/fa"
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../context/ThemeContext"
+import { Link } from "react-router";
 
-export default function Header({ toggleSidebar, onLogout }) {
+export default function Header({ toggleSidebar, onLogout , userEmail }) {
   const { isDarkMode, toggleTheme } = useTheme()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showMessages, setShowMessages] = useState(false)
@@ -21,7 +22,6 @@ export default function Header({ toggleSidebar, onLogout }) {
     },
     { id: 4, text: "New feature available: Dark Mode", time: "1 day ago", read: true, icon: "fa-bell" },
   ])
-
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -49,10 +49,24 @@ export default function Header({ toggleSidebar, onLogout }) {
       avatar: "AJ",
     },
   ])
+  const [email,setemail] = useState('')
+  useEffect(()=>{
+   let user = localStorage.getItem('admin_email')
+   setemail(user)
+  })
 
   const notificationsRef = useRef(null)
   const messagesRef = useRef(null)
   const profileRef = useRef(null)
+
+    const getInitials = (email) => {
+    if (!email) return 'Ar'; // Default if no email
+    const parts = email.split('@')[0].split(/[. _-]/);
+    return parts
+      .map(part => part.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -294,46 +308,50 @@ export default function Header({ toggleSidebar, onLogout }) {
 
         {/* Profile Dropdown */}
         <div className="relative">
-          <div
-            className="profileButton h-8 w-8 md:h-8 md:w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-r from-green-400 via-green-600 to-green-800 text-white flex items-center justify-center font-semibold hover:bg-gradient-to-l transition-all duration-700 text-xs md:text-sm lg:text-base cursor-pointer shadow-lg hover:shadow-green-500/20"
-            onClick={toggleProfile}
-          >
-            Ar
-          </div>
+  <div
+    className="profileButton h-8 w-8 md:h-8 md:w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-r from-green-400 via-green-600 to-green-800 text-white flex items-center justify-center font-semibold hover:bg-gradient-to-l transition-all duration-700 text-xs md:text-sm lg:text-base cursor-pointer shadow-lg hover:shadow-green-500/20"
+    onClick={toggleProfile}
+  >
+    {getInitials(email)}
+  </div>
 
           {showProfile && (
-            <div
-              ref={profileRef}
-              className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border border-gray-200 dark:border-gray-700 transform transition-all duration-200 origin-top"
-              style={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
-            >
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-400 via-green-600 to-green-800 text-white flex items-center justify-center font-semibold shadow-md">
-                    Ar
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-gray-800 dark:text-white font-medium">Aryan</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">admin@idharudhar.com</p>
-                  </div>
-                </div>
-              </div>
+    <div
+      ref={profileRef}
+      className="absolute right-0 mt-2  bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 border border-gray-200 dark:border-gray-700 transform transition-all duration-200 origin-top"
+      style={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+    >
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-400 via-green-600 to-green-800 text-white flex items-center justify-center font-semibold shadow-md">
+            {getInitials(email)}
+          </div>
+          <div className="ml-3">
+            <p className="text-gray-800 dark:text-white font-medium">
+              {email ? email.split('@')[0] : 'User'}
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
+              {email || 'admin@idharudhar.com'}
+            </p>
+          </div>
+        </div>
+      </div>
               <div className="py-1">
                 
-                <a
-                  href="#"
+                <Link
+                  to='bills'
                   className="bloc px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white transition-colors duration-150 flex items-center"
                 >
                   <i className="fas fa-credit-card mr-3 text-gray-500 dark:text-gray-400 w-4 text-center"></i>
                   Billing
-                </a>
-                <a
-                  href="#"
+                </Link>
+                <Link
+                  to=''
                   className="bloc px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white transition-colors duration-150 flex items-center"
                 >
                   <i className="fas fa-tachometer-alt mr-3 text-gray-500 dark:text-gray-400 w-4 text-center"></i>
                   Dashboard
-                </a>
+                </Link>
               </div>
               <div className="py-1 border-t border-gray-200 dark:border-gray-700" onClick={onLogout}>
                 <a
