@@ -87,6 +87,7 @@ export default function Layout() {
 
       if (response.data && response.data.success && response.data.token) {
         localStorage.setItem("admin_token", response.data.token);
+        localStorage.setItem("admin_email", email);
         setIsAuthenticated(true);
       } else {
         throw new Error(response.data?.message || "Authentication failed. Please try again.");
@@ -94,6 +95,7 @@ export default function Layout() {
       
     } catch (err) {
       localStorage.setItem("admin_token", email || "idharudharuser");
+      localStorage.setItem("admin_email", email);
       setIsAuthenticated(true);
       setLoginError(err.response?.data?.message || err.message || "Invalid OTP. Please try again.");
       setOtp("");
@@ -125,6 +127,7 @@ export default function Layout() {
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_email");
     setIsAuthenticated(false);
     setEmail("");
     setOtp("");
@@ -296,7 +299,7 @@ export default function Layout() {
         </div>
       ) : (
         <div className="h-screen w-screen bg-gray-100 dark:bg-gray-900 flex flex-col transition-colors duration-300">
-          <Header toggleSidebar={toggleSidebar} onLogout={handleLogout} />
+          <Header toggleSidebar={toggleSidebar} onLogout={handleLogout}  userEmail={email} />
           <div className="MainContent flex flex-1 overflow-hidden">
             <MainSideBar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             <div
