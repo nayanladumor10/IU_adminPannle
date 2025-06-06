@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useTheme } from "../context/ThemeContext"
+import ChatModal from "../Components/ChatModal"
+
 
 // Mock API functions
 const api = {
@@ -676,110 +678,6 @@ const TrackingModal = ({ isOpen, onClose, ride, activeTab, onTabChange, getStatu
   )
 }
 
-// Chat Modal Component
-const ChatModal = ({
-  isOpen,
-  onClose,
-  ride,
-  getStatusBadge,
-  chatMessage,
-  onChatMessageChange,
-  onSendMessage,
-  cannedMessages,
-}) => {
-  if (!isOpen || !ride) return null
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div
-        className="flex h-[80vh] w-full max-w-md flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Chat - #{ride.id}</h2>
-          <button
-            className="text-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col p-4">
-          <div className="mb-4 flex items-center justify-between rounded-lg bg-gray-100 dark:bg-gray-700 p-3">
-            <div>
-              <p className="font-semibold text-gray-800 dark:text-white">#{ride.id}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                {ride.riderName} ↔ {ride.driverName}
-              </p>
-            </div>
-            {getStatusBadge(ride.status)}
-          </div>
-
-          <div className="flex-1 space-y-3 overflow-y-auto mb-4">
-            {ride.chatMessages?.length > 0 ? (
-              ride.chatMessages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === "admin" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[75%] rounded-lg p-3 ${
-                      msg.sender === "admin"
-                        ? "bg-emerald-600 text-white"
-                        : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
-                    }`}
-                  >
-                    <div className="mb-1 text-xs uppercase opacity-75">{msg.sender}</div>
-                    <p className="text-sm">{msg.message}</p>
-                    <span className="mt-1 block text-xs opacity-75">{msg.timestamp}</span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center py-12 text-center text-gray-500 dark:text-gray-400">
-                <div className="mb-4 text-5xl opacity-50">💬</div>
-                <p className="text-gray-800 dark:text-white mb-1">No messages yet</p>
-                <p className="text-sm">Start a conversation with the driver or rider</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Quick Messages:</p>
-            <div className="flex flex-wrap gap-2">
-              {cannedMessages.slice(0, 3).map((msg, index) => (
-                <button
-                  key={index}
-                  className="rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1 text-xs text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => onChatMessageChange(msg)}
-                >
-                  {msg}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={chatMessage}
-              onChange={(e) => onChatMessageChange(e.target.value)}
-              placeholder="Type your message..."
-              onKeyPress={(e) => e.key === "Enter" && onSendMessage()}
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors duration-300"
-            />
-            <button
-              onClick={onSendMessage}
-              disabled={!chatMessage.trim()}
-              className="rounded-lg bg-emerald-600 px-3 py-2 text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              📤
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function RidesManagement() {
   const { isDarkMode } = useTheme()
   const [rides, setRides] = useState([])
@@ -1007,7 +905,7 @@ export default function RidesManagement() {
 
       showToast({
         title: "Status Updated",
-        description: `Ride status changed to ${newStatus}.`,
+        description:` Ride status changed to ${newStatus}.`,
       })
     } catch (error) {
       console.error("Error updating ride status:", error)
