@@ -16,7 +16,9 @@ export default function DriverManagementDashboard() {
       kycStatus: "Pending",
       joinDate: "2025-06-05",
       vehicleType: "Bike",
-      licensePlate: "MH01AB1234"
+      licensePlate: "MH01AB1234",
+      licensePhoto: null,
+      panCardPhoto: null
     },
     {
       id: 2,
@@ -26,7 +28,9 @@ export default function DriverManagementDashboard() {
       kycStatus: "Pending",
       joinDate: "2025-06-05",
       vehicleType: "Scooter",
-      licensePlate: "MH02CD5678"
+      licensePlate: "MH02CD5678",
+      licensePhoto: null,
+      panCardPhoto: null
     },
     {
       id: 3,
@@ -36,7 +40,9 @@ export default function DriverManagementDashboard() {
       kycStatus: "Verified",
       joinDate: "2025-06-04",
       vehicleType: "Auto Rickshaw",
-      licensePlate: "MH03EF9012"
+      licensePlate: "MH03EF9012",
+      licensePhoto: null,
+      panCardPhoto: null
     },
     {
       id: 4,
@@ -46,7 +52,9 @@ export default function DriverManagementDashboard() {
       kycStatus: "Pending",
       joinDate: "2025-06-03",
       vehicleType: "Car",
-      licensePlate: "MH04GH3456"
+      licensePlate: "MH04GH3456",
+      licensePhoto: null,
+      panCardPhoto: null
     },
     {
       id: 5,
@@ -56,18 +64,24 @@ export default function DriverManagementDashboard() {
       kycStatus: "Rejected",
       joinDate: "2025-06-02",
       vehicleType: "E-Rickshaw",
-      licensePlate: "MH05IJ7890"
+      licensePlate: "MH05IJ7890",
+      licensePhoto: null,
+      panCardPhoto: null
     },
   ])
   
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" })
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    email: "", 
+    phone: "",
+    vehicleType: "",
+    licensePlate: ""
+  })
   const [errors, setErrors] = useState({})
   const [successMessage, setSuccessMessage] = useState("")
   const [editDriver, setEditDriver] = useState(null)
   const [licensePhoto, setLicensePhoto] = useState(null)
-  const [insurancePhoto, setInsurancePhoto] = useState(null)
-  const [passportPhoto, setPassportPhoto] = useState(null)
-  const [vehicleForm, setVehicleForm] = useState({ type: "", plate: "" })
+  const [panCardPhoto, setPanCardPhoto] = useState(null)
   const [selectedDriverId, setSelectedDriverId] = useState(null)
   const [kycVerificationMessage, setKycVerificationMessage] = useState("")
   
@@ -79,43 +93,42 @@ export default function DriverManagementDashboard() {
   // Filtered and sorted drivers
   const [filteredDrivers, setFilteredDrivers] = useState([])
 
-useEffect(() => {
-  // Apply search, filter and sort whenever drivers, searchTerm, filterKycStatus or sortConfig changes
-  let result = [...drivers];
+  useEffect(() => {
+    // Apply search, filter and sort whenever drivers, searchTerm, filterKycStatus or sortConfig changes
+    let result = [...drivers];
 
-  // Apply search
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    result = result.filter(driver => 
-      driver.name.toLowerCase().includes(term) || 
-      driver.email.toLowerCase().includes(term) || 
-      driver.phone.includes(term) ||
-      driver.vehicleType.toLowerCase().includes(term) ||
-      driver.licensePlate.toLowerCase().includes(term)
-    ); // <-- FIXED: closing parenthesis was missing here
-  }
+    // Apply search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(driver => 
+        driver.name.toLowerCase().includes(term) || 
+        driver.email.toLowerCase().includes(term) || 
+        driver.phone.includes(term) ||
+        driver.vehicleType.toLowerCase().includes(term) ||
+        driver.licensePlate.toLowerCase().includes(term)
+      );
+    }
 
-  // Apply KYC status filter
-  if (filterKycStatus !== "all") {
-    result = result.filter(driver => driver.kycStatus.toLowerCase() === filterKycStatus.toLowerCase());
-  }
+    // Apply KYC status filter
+    if (filterKycStatus !== "all") {
+      result = result.filter(driver => driver.kycStatus.toLowerCase() === filterKycStatus.toLowerCase());
+    }
 
-  // Apply sorting
-  if (sortConfig.key) {
-    result.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'ascending' ? -1 : 1;
-      }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'ascending' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+    // Apply sorting
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
 
-  setFilteredDrivers(result);
-}, [drivers, searchTerm, filterKycStatus, sortConfig]);
-
+    setFilteredDrivers(result);
+  }, [drivers, searchTerm, filterKycStatus, sortConfig]);
 
   const requestSort = (key) => {
     let direction = 'ascending'
@@ -133,7 +146,13 @@ useEffect(() => {
   const openModal = (type) => {
     setModalType(type)
     setShowModal(true)
-    setFormData({ name: "", email: "", phone: "" })
+    setFormData({ 
+      name: "", 
+      email: "", 
+      phone: "",
+      vehicleType: "",
+      licensePlate: ""
+    })
     setErrors({})
     setSuccessMessage("")
   }
@@ -144,8 +163,7 @@ useEffect(() => {
     setErrors({})
     setSuccessMessage("")
     setLicensePhoto(null)
-    setInsurancePhoto(null)
-    setPassportPhoto(null)
+    setPanCardPhoto(null)
   }
 
   const handleDeleteDriver = (id) => {
@@ -161,6 +179,8 @@ useEffect(() => {
     if (!formData.name.trim()) newErrors.name = "Driver name is required."
     if (!formData.phone.match(/^\d{10}$/)) newErrors.phone = "Phone must be 10 digits."
     if (!formData.email.includes("@") || !formData.email.includes(".")) newErrors.email = "Invalid email format."
+    if (!formData.vehicleType.trim()) newErrors.vehicleType = "Vehicle type is required."
+    if (!formData.licensePlate.trim()) newErrors.licensePlate = "License plate is required."
     return newErrors
   }
 
@@ -179,13 +199,21 @@ useEffect(() => {
         phone: formData.phone,
         kycStatus: "Pending",
         joinDate: new Date().toISOString().split("T")[0],
-        vehicleType: "",
-        licensePlate: ""
+        vehicleType: formData.vehicleType,
+        licensePlate: formData.licensePlate,
+        licensePhoto: licensePhoto,
+        panCardPhoto: panCardPhoto
       }
 
       setDrivers([...drivers, newDriver])
       setSuccessMessage("Driver onboarded successfully!")
-      setFormData({ name: "", email: "", phone: "" })
+      setFormData({ 
+        name: "", 
+        email: "", 
+        phone: "",
+        vehicleType: "",
+        licensePlate: ""
+      })
       setErrors({})
 
       setTimeout(() => {
@@ -193,7 +221,7 @@ useEffect(() => {
         closeModal()
       }, 1500)
     } else if (modalType === "kyc") {
-      if (licensePhoto && insurancePhoto && passportPhoto) {
+      if (licensePhoto && panCardPhoto) {
         setDrivers((prev) =>
           prev.map((driver) => (driver.kycStatus === "Pending" ? { ...driver, kycStatus: "Verified" } : driver)),
         )
@@ -203,27 +231,6 @@ useEffect(() => {
       setDrivers((prev) => prev.map((driver) => (driver.id === editDriver.id ? editDriver : driver)))
       setEditDriver(null)
       closeModal()
-    } else if (modalType === "vehicleType") {
-      if (!vehicleForm.type || !vehicleForm.plate || selectedDriverId === null) return
-
-      const updatedDrivers = drivers.map((driver) => {
-        if (driver.id === selectedDriverId) {
-          return {
-            ...driver,
-            vehicleType: vehicleForm.type,
-            licensePlate: vehicleForm.plate,
-          }
-        }
-        return driver
-      })
-
-      setDrivers(updatedDrivers)
-      setVehicleForm({ type: "", plate: "" })
-      setSelectedDriverId(null)
-      setShowModal(false)
-      setSuccessMessage("Vehicle information updated successfully!")
-
-      setTimeout(() => setSuccessMessage(""), 3000)
     }
   }
 
@@ -310,7 +317,7 @@ useEffect(() => {
       <div className="w-full mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">Driver Management Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage drivers, vehicles, and KYC verification</p>
+          <p className="text-gray-600 dark:text-gray-400">Manage drivers and their vehicle information</p>
         </div>
 
         {/* Success Messages */}
@@ -334,216 +341,131 @@ useEffect(() => {
             <User className="inline w-4 h-4 mr-2" />
             Driver Management
           </button>
-          <button
-            onClick={() => setActiveTab("vehicle")}
-            className={`px-6 py-3 rounded-md font-medium ${activeTab === "vehicle" ? "bg-green-600 dark:bg-green-700 text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-300 dark:hover:bg-gray-700"}`}
-          >
-            <Car className="inline w-4 h-4 mr-2" />
-            Vehicle Information
-          </button>
         </div>
 
         {/* Driver Management */}
-        {activeTab === "drivers" && (
-          <div className="space-y-6">
-            <div className="flex flex-wrap gap-4 mb-6">
-              <button
-                onClick={() => openModal("onboard")}
-                className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg flex items-center font-medium text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Onboard New Driver
-              </button>
-              <button
-                onClick={() => openModal("kyc")}
-                className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center text-white"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Bulk KYC Verification
-              </button>
-              <button
-                onClick={() => openModal("manage")}
-                className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center text-white"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Manage Profiles
-              </button>
-            </div>
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-4 mb-6">
+            <button
+              onClick={() => openModal("onboard")}
+              className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg flex items-center font-medium text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Onboard New Driver
+            </button>
+            <button
+              onClick={() => openModal("kyc")}
+              className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center text-white"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Bulk KYC Verification
+            </button>
+            <button
+              onClick={() => openModal("manage")}
+              className="bg-green-600 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center text-white"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Manage Profiles
+            </button>
+          </div>
 
-            {/* Driver Search & Filter */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search drivers by name, email, phone, or vehicle..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent"
-                />
+          {/* Driver Search & Filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search drivers by name, email, phone, or vehicle..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent"
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="relative">
+                <select
+                  value={filterKycStatus}
+                  onChange={(e) => setFilterKycStatus(e.target.value)}
+                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-3 rounded-lg appearance-none pr-8"
+                >
+                  <option value="all">All KYC Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="verified">Verified</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
               
-              <div className="flex gap-4">
-                <div className="relative">
-                  <select
-                    value={filterKycStatus}
-                    onChange={(e) => setFilterKycStatus(e.target.value)}
-                    className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-3 rounded-lg appearance-none pr-8"
-                  >
-                    <option value="all">All KYC Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="verified">Verified</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => {
-                    setSearchTerm("")
-                    setFilterKycStatus("all")
-                    setSortConfig({ key: null, direction: 'ascending' })
-                  }}
-                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center text-gray-700 dark:text-gray-300"
-                >
-                  Reset Filters
-                </button>
-              </div>
-            </div>
-
-            {/* Drivers Count */}
-            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-              Showing {filteredDrivers.length} of {drivers.length} drivers
-            </div>
-
-            {/* Drivers Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-green-600 dark:text-green-400">Driver List</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                      <th 
-                        className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
-                        onClick={() => requestSort("name")}
-                      >
-                        <div className="flex items-center">
-                          Name {getSortIcon("name")}
-                        </div>
-                      </th>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Contact</th>
-                      <th 
-                        className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
-                        onClick={() => requestSort("kycStatus")}
-                      >
-                        <div className="flex items-center">
-                          KYC Status {getSortIcon("kycStatus")}
-                        </div>
-                      </th>
-                      <th 
-                        className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
-                        onClick={() => requestSort("joinDate")}
-                      >
-                        <div className="flex items-center">
-                          Join Date {getSortIcon("joinDate")}
-                        </div>
-                      </th>
-                      <th 
-                        className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
-                        onClick={() => requestSort("vehicleType")}
-                      >
-                        <div className="flex items-center">
-                          Vehicle {getSortIcon("vehicleType")}
-                        </div>
-                      </th>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredDrivers.length > 0 ? (
-                      filteredDrivers.map((driver) => (
-                        <tr
-                          key={driver.id}
-                          className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-gray-900 dark:text-white">{driver.name}</div>
-                            <div className="text-gray-500 dark:text-gray-400 text-sm">ID: {driver.id}</div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
-                            <div>{driver.email}</div>
-                            <div>{driver.phone}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <span className={`font-medium ${getStatusColor(driver.kycStatus)}`}>
-                                {driver.kycStatus}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{driver.joinDate}</td>
-                          <td
-                            className="px-6 py-4 text-green-600 dark:text-green-400 cursor-pointer hover:underline"
-                            onClick={() => {
-                              setSelectedDriverId(driver.id)
-                              setVehicleForm({ 
-                                type: driver.vehicleType || "", 
-                                plate: driver.licensePlate || "" 
-                              })
-                              setModalType("vehicleType")
-                              setShowModal(true)
-                            }}
-                          >
-                            {driver.vehicleType || "—"}
-                            {driver.licensePlate && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {driver.licensePlate}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            {getStatusActions(driver.kycStatus, driver.id)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                          No drivers found matching your criteria
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <button 
+                onClick={() => {
+                  setSearchTerm("")
+                  setFilterKycStatus("all")
+                  setSortConfig({ key: null, direction: 'ascending' })
+                }}
+                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center text-gray-700 dark:text-gray-300"
+              >
+                Reset Filters
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Vehicle Tab */}
-        {activeTab === "vehicle" && (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-green-600 dark:text-green-400">Vehicle Information</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-100 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Driver</th>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Vehicle Type</th>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">License Plate</th>
-                      <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drivers.map((driver) => (
+          {/* Drivers Count */}
+          <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            Showing {filteredDrivers.length} of {drivers.length} drivers
+          </div>
+
+          {/* Drivers Table */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm dark:shadow-none">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-green-600 dark:text-green-400">Driver List</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-100 dark:bg-gray-700">
+                  <tr>
+                    <th 
+                      className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
+                      onClick={() => requestSort("name")}
+                    >
+                      <div className="flex items-center">
+                        Name {getSortIcon("name")}
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Contact</th>
+                    <th 
+                      className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
+                      onClick={() => requestSort("kycStatus")}
+                    >
+                      <div className="flex items-center">
+                        KYC Status {getSortIcon("kycStatus")}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
+                      onClick={() => requestSort("joinDate")}
+                    >
+                      <div className="flex items-center">
+                        Join Date {getSortIcon("joinDate")}
+                      </div>
+                    </th>
+                    <th 
+                      className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium cursor-pointer"
+                      onClick={() => requestSort("vehicleType")}
+                    >
+                      <div className="flex items-center">
+                        Vehicle {getSortIcon("vehicleType")}
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-gray-600 dark:text-gray-400 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDrivers.length > 0 ? (
+                    filteredDrivers.map((driver) => (
                       <tr
                         key={driver.id}
                         className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -552,36 +474,45 @@ useEffect(() => {
                           <div className="font-medium text-gray-900 dark:text-white">{driver.name}</div>
                           <div className="text-gray-500 dark:text-gray-400 text-sm">ID: {driver.id}</div>
                         </td>
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {driver.vehicleType || "—"}
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {driver.licensePlate || "—"}
+                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                          <div>{driver.email}</div>
+                          <div>{driver.phone}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => {
-                              setSelectedDriverId(driver.id)
-                              setVehicleForm({ 
-                                type: driver.vehicleType || "", 
-                                plate: driver.licensePlate || "" 
-                              })
-                              setModalType("vehicleType")
-                              setShowModal(true)
-                            }}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm"
-                          >
-                            Edit Vehicle
-                          </button>
+                          <div className="flex items-center">
+                            <span className={`font-medium ${getStatusColor(driver.kycStatus)}`}>
+                              {driver.kycStatus}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{driver.joinDate}</td>
+                        <td className="px-6 py-4">
+                          <div className="text-green-600 dark:text-green-400">
+                            {driver.vehicleType || "—"}
+                            {driver.licensePlate && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {driver.licensePlate}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {getStatusActions(driver.kycStatus, driver.id)}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        No drivers found matching your criteria
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Modal Section */}
         {showModal && (
@@ -593,7 +524,6 @@ useEffect(() => {
                   {modalType === "onboard" && "Onboard New Driver"}
                   {modalType === "kyc" && "Bulk KYC Verification"}
                   {modalType === "manage" && "Manage Driver Profiles"}
-                  {modalType === "vehicleType" && "Update Vehicle Information"}
                 </h3>
                 <button
                   onClick={closeModal}
@@ -634,6 +564,48 @@ useEffect(() => {
                       className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                     {errors.phone && <p className="text-red-500 dark:text-red-400 text-sm">{errors.phone}</p>}
+
+                    <input
+                      type="text"
+                      placeholder="Vehicle Type (e.g., Car, Bike)"
+                      value={formData.vehicleType}
+                      onChange={(e) => setFormData({ ...formData, vehicleType: e.target.value })}
+                      className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    />
+                    {errors.vehicleType && <p className="text-red-500 dark:text-red-400 text-sm">{errors.vehicleType}</p>}
+
+                    <input
+                      type="text"
+                      placeholder="License Plate Number"
+                      value={formData.licensePlate}
+                      onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
+                      className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    />
+                    {errors.licensePlate && <p className="text-red-500 dark:text-red-400 text-sm">{errors.licensePlate}</p>}
+
+                    <div className="flex flex-col">
+                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        Upload Driver's License
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setLicensePhoto(e.target.files[0])}
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div className="flex flex-col">
+                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        Upload PAN Card
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setPanCardPhoto(e.target.files[0])}
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white"
+                      />
+                    </div>
                   </>
                 )}
 
@@ -657,74 +629,16 @@ useEffect(() => {
                       />
                     </div>
 
-                    {/* Insurance Certificate */}
+                    {/* PAN Card */}
                     <div className="flex flex-col">
                       <label className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Upload Insurance Certificates (ZIP)
+                        Upload PAN Cards (ZIP)
                       </label>
                       <input
                         type="file"
                         accept=".zip"
-                        onChange={(e) => setInsurancePhoto(e.target.files[0])}
+                        onChange={(e) => setPanCardPhoto(e.target.files[0])}
                         className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white"
-                      />
-                    </div>
-
-                    {/* Passport Size Photo */}
-                    <div className="flex flex-col">
-                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        Upload Passport Photos (ZIP)
-                      </label>
-                      <input
-                        type="file"
-                        accept=".zip"
-                        onChange={(e) => setPassportPhoto(e.target.files[0])}
-                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Vehicle Type Modal */}
-                {modalType === "vehicleType" && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">Driver</label>
-                      <select
-                        value={selectedDriverId || ""}
-                        onChange={(e) => setSelectedDriverId(Number(e.target.value))}
-                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white"
-                      >
-                        <option value="">-- Select Driver --</option>
-                        {drivers.map((driver) => (
-                          <option key={driver.id} value={driver.id}>
-                            {driver.name} (ID: {driver.id})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">
-                        Vehicle Type (Car, Bike, etc.)
-                      </label>
-                      <input
-                        type="text"
-                        value={vehicleForm.type}
-                        onChange={(e) => setVehicleForm({ ...vehicleForm, type: e.target.value })}
-                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        placeholder="e.g., Car"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">License Plate Number</label>
-                      <input
-                        type="text"
-                        value={vehicleForm.plate}
-                        onChange={(e) => setVehicleForm({ ...vehicleForm, plate: e.target.value })}
-                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        placeholder="e.g., MH12AB1234"
                       />
                     </div>
                   </div>
@@ -756,6 +670,20 @@ useEffect(() => {
                           onChange={(e) => setEditDriver({ ...editDriver, phone: e.target.value })}
                           className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                         />
+                        <input
+                          type="text"
+                          placeholder="Vehicle Type"
+                          value={editDriver.vehicleType}
+                          onChange={(e) => setEditDriver({ ...editDriver, vehicleType: e.target.value })}
+                          className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="License Plate"
+                          value={editDriver.licensePlate}
+                          onChange={(e) => setEditDriver({ ...editDriver, licensePlate: e.target.value })}
+                          className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        />
                       </>
                     ) : (
                       <div className="space-y-4 max-h-[300px] overflow-y-auto">
@@ -768,6 +696,9 @@ useEffect(() => {
                               <div className="text-gray-900 dark:text-white font-medium">{driver.name}</div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {driver.email} | {driver.phone}
+                              </div>
+                              <div className="text-sm text-green-600 dark:text-green-400">
+                                {driver.vehicleType} ({driver.licensePlate})
                               </div>
                             </div>
                             <div className="flex gap-2">
